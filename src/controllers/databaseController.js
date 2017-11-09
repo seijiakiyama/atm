@@ -38,7 +38,7 @@ export function getAllowedBanknotes(banknotes) {
     });
 }
 
-export function withdrawBanknotes() {
+export function withdrawBanknotes(data) {
   let bulkOp = data.banknotes.map((banknote) => {
     return { updateOne: {
       filter: { value: banknote.value },
@@ -53,7 +53,7 @@ export function checkAvailableBalance(account, value) {
     { account: account })
     .then((results) => {
       if (Array.isArray(results) && results[0]) {
-        return value <= account.balance;
+        return value <= results[0].balance;
       } else {
         throw new Error('Invalid account');
       }

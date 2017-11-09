@@ -37,7 +37,7 @@ function find(collectionName, data, options) {
 function update(collectionName, query, op, options) {
   return getDb()
     .then((db) => {
-      return db.collection(collectionName).update(query, op, options);
+      return db.collection(collectionName).updateOne(query, op, options);
     });
 }
 

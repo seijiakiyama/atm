@@ -4,7 +4,7 @@ export function deposit(data) {
   if (checkData(data)) {
     return checkAllowedBanknotes(data.banknotes)
       .then((allowed) => {
-        console.log(allowed)
+        //console.log(allowed)
         if (allowed) {
           let bulkOp = data.banknotes.map((banknote) => {
             return { updateOne: {
@@ -16,9 +16,9 @@ export function deposit(data) {
           ////////////////////////////////
           return databaseController.generateStatement(data)
             .then((statement) => {
-              console.log(statement)
+              //console.log(statement)
               return databaseController
-                .bulkOp('Banknotes', bulkOp)
+                .bulkOp('Banknote', bulkOp)
                 .then(() => {
                   return databaseController.upsert('Account', {
                     where: { account: data.targetAccount },
@@ -42,10 +42,12 @@ export function deposit(data) {
   }
 
   function checkData(data) {
-    //console.log(data);
     return !Number.isNaN(Number(data.value)) &&
       Array.isArray(data.banknotes) &&
-      data.targetAccount;
+      data.targetAccount &&
+      Number(data.value) === (data.banknotes.reduce((sum, note) => {
+        return sum + (note.amount || 0) * (Number(note.value) || 0);
+      }, 0));
   }
 }
 
@@ -53,7 +55,7 @@ export function withdraw(data){
   // checks if sent data is valid
   if (checkData(data)) {
     // checks if account has available balance
-    return databaseController.checkAvailableBalance(account, data.value)
+    return databaseController.checkAvailableBalance(data.account, data.value)
       .then((goodToGo) => {
         if (goodToGo) {
           // generates statement
@@ -63,16 +65,22 @@ export function withdraw(data){
               return withdrawBanknotes(data.value)
                 .then((results) => {
                   // removes value from account balance
+                  data.banknotes = results;
                   return databaseController.upsert('Account', {
-                    where: { account: data.targetAccount },
+                    where: { account: data.account },
                     op: {'$inc': { balance: -1 * Number(data.value) }}
                   });
-                }).then(() => {
+                }).then((updatedAccount) => {
                   let value = updatedAccount.balance;
                   return databaseController.updateStatement(statement, value);
+                }).then(() => {
+                  data.success = true;
+                  return data;
                 }).catch((e) => {
+                  console.log(e.stack);
                   //rollback
-                  //print statement without returning promise
+                  //save statement without returning promise
+                  throw e;
                 });
             })
         } else {
@@ -84,8 +92,8 @@ export function withdraw(data){
   }
 
   function checkData(data) {
-    return Number.isNaN(Number(data.value)) &&
-      data.targetAccount;
+    return !Number.isNaN(Number(data.value)) &&
+      data.account;
   }
 }
 
@@ -111,14 +119,15 @@ function withdrawBanknotes(value) {
   return databaseController
     .getAvailableNotes()
     .then((results) => {
-      let noteValue = [], amount = [];
-      Object.keys(results).forEach((banknote) => {
-        noteValue.push(banknote);
-        amount.push(results[banknote]);
+      let noteValue = [];
+      let amount = results.map((banknote) => {
+        noteValue.push(banknote.value);
+        return banknote.amount;
       });
       return getMinimumBanknotes(noteValue, amount, value);
     })
     .then((minimum) => {
+      console.log('minimum', minimum);
       if (minimum) {
         let bulkOp = Object.keys(minimum).map((banknote) => {
           return { updateOne: {
@@ -127,20 +136,20 @@ function withdrawBanknotes(value) {
             upsert: true
           }};
         });
-        return databaseController.bulkOp('Banknotes', bulkOp)
+        return databaseController.bulkOp('Banknote', bulkOp)
         .then(() => {
-          return databaseController.upsert('Account', {
-            where: { account: data.targetAccount },
-            op: {'$inc': { balance: Number(data.value) }} //// must be negative
-          });
+          return minimum;
         });
       } else {
-        throw new Error('Invalid value or banknotes calculation');
+        throw new Error('Insufficient banknotes or Invalid banknotes calculation');
       }
-    })
+    });
 }
 
 function getMinimumBanknotes(notes, count, value) {
+  console.log('notes', notes);
+  console.log('count', count);
+  console.log('value', value);
   // adapted from coin change problem
   let notesSize = notes.length; // different notes array
   let dp = new Array(value + 1); // different possibilities array

@@ -23,7 +23,28 @@ router.post('/deposit', function(req, res, next) {
   }
 });
 
+router.post('/withdraw', function(req, res, next) {
+  let parsedInput = parseInput(req);
+  apiController.withdraw(parsedInput)
+    .then(successWithdraw)
+    .catch((e) => {
+      res.status(400).send('Value not deposited: ' + e);
+    });
+
+  function successWithdraw(result) {
+    if (result.success) {
+      res.status(200).json({
+        value: result.value,
+        banknotes: result.banknotes
+      })
+    } else {
+      throw new Error('Value not deposited. Unknown Error.');
+    }
+  }
+});
+
 function parseInput(req) {
+  // TODO validate
   return req.body;
 }
 
