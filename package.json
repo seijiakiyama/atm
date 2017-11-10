@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "prestart": "npm run build",
     "build": "babel src -d lib --copy-files",
     "lint": "eslint --cache ./src ./spec",
     "babel": "babel-node index.js"
