@@ -1,10 +1,10 @@
 # atm
 NodeJS Test with basic deposit/withdraw-minimum
 
-Live URL:  
+## Live URL:  
 https://intense-dawn-27185.herokuapp.com/  
 
-API:  
+## API:  
 
 * `/api/balance` [GET]  
 ```
@@ -36,3 +36,10 @@ API:
   "account": "test"
 }
 ```
+
+## Details
+
+DB needs one single preparations before start using:  
+The Collection "Banknote" has the `"notAllowed":false` parameter to be block specific Bank Notes Nominations (such as 1 BRL).
+
+Auth, Tests and local Config are not included at this moment
