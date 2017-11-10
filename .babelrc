@@ -1,4 +1,7 @@
 {
   "presets": ["env", "es2016"],
-  "plugins": ["add-module-exports"]
+  "plugins": ["add-module-exports"],
+  "ignore": [
+    "src/public/**/*.js"
+  ]
 }

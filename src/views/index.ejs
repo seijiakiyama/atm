@@ -5,7 +5,49 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
+    <script type="application/javascript" src="/javascripts/angular.min.js"></script>
+    <script type="application/javascript" src="/javascripts/atm.js"></script>
     <h1><%= title %></h1>
     <p>Welcome to <%= title %></p>
+    <div ng-controller="main">
+
+      <div>
+        Withdraw
+        <label class="switch">
+          <input type="checkbox" ng-model="showDeposit">
+          <span class="slider round"></span>
+        </label>
+        Deposit
+        <br/>
+      </div>
+      <br/>
+
+      <div>
+        <input type="text" ng-model="accountId" class="form-control"></input>
+        <button ng-click="getBalance()" ng-init="">Get balance</button>
+        <button ng-click="executeAction()" ng-init="">{{ showDeposit ? 'Deposit' : 'Withdraw' }}</button>
+      </div>
+
+      <br/>
+
+      <div ng-show="showDeposit">
+        <button ng-click="addBanknote()" ng-init="">+</button>
+        <ul>
+          <li ng-repeat="coiso in repeater">
+            Value: <input type="number" ng-model="coiso.value" class="form-control"></input>
+            Amount: <input type="number" ng-model="coiso.amount" class="form-control"></input>
+            <button ng-click="removeBanknote($index)">-</button>
+          </li>
+          <li ng-if="repeater.length === 0">
+            <strong>No banknotes...</strong>
+          </li>
+        </ul>
+      </div>
+
+      <div ng-hide="showDeposit">
+        Value: <input type="number" ng-model="withdrawAmount" class="form-control"></input>
+      </div>
+
+    </div>
   </body>
 </html>

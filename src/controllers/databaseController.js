@@ -52,8 +52,10 @@ export function checkAvailableBalance(account, value) {
   return config.database.find('Account',
     { account: account })
     .then((results) => {
-      if (Array.isArray(results) && results[0]) {
+      if (value > 0 && Array.isArray(results) && results[0]) {
         return value <= results[0].balance;
+      } else if (value === undefined) {
+        return results[0].balance;
       } else {
         throw new Error('Invalid account');
       }

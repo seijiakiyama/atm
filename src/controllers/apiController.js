@@ -1,5 +1,12 @@
 import * as databaseController from './databaseController';
 
+export function balance(account) {
+  return databaseController.checkAvailableBalance(account)
+    .then((value) => {
+      return {value};
+    });
+}
+
 export function deposit(data) {
   if (checkData(data)) {
     return checkAllowedBanknotes(data.banknotes)
